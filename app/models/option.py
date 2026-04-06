@@ -12,6 +12,8 @@ class FlightOption(BaseModel):
     stops: int = 0
     available_seats: int = 0
     cabin_class: str = "economy"
+    booking_url: str = ""
+    source: str = "mock"
 
 
 class HotelOption(BaseModel):
@@ -22,6 +24,8 @@ class HotelOption(BaseModel):
     rating: float
     available_rooms: int = 0
     amenities: list[str] = []
+    booking_url: str = ""
+    source: str = "mock"
 
 
 class BookingOption(BaseModel):

@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -7,22 +8,33 @@ class Settings(BaseSettings):
     azure_openai_endpoint: str = ""  # https://xxx.cognitiveservices.azure.com/
     azure_openai_api_version: str = "2024-12-01-preview"
     azure_openai_chat_deployment: str = ""  # e.g. "gpt-4o-mini"
-    azure_openai_embedding_deployment: str = ""  # e.g. "text-embedding-3-large"
 
-    # Pipeline timeout budgets (seconds)
-    retrieval_timeout: float = 5.0
-    agent_timeout: float = 10.0
-    verification_timeout: float = 10.0
+    # LLM provider -- "azure" or "google"
+    llm_provider: str = "azure"
 
-    # Confidence routing thresholds
-    auto_suggest_threshold: float = 0.85
-    human_review_threshold: float = 0.60
+    # Google Gemini (google-genai SDK)
+    google_ai_api_key: str = ""
+    google_ai_model: str = "gemini-2.0-flash"
 
-    # Retrieval
-    retrieval_top_k: int = 5
-    rerank_top_k: int = 3
+    # Verification confidence threshold
+    verification_confidence_threshold: float = 0.60
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    # Crawler -- route pairs as "ORIGIN-DESTINATION", e.g. "SGN-SYD"
+    # In .env: CRAWL_ROUTES=SGN-SYD,SYD-SGN,SGN-NRT
+    crawl_routes: str = "SGN-SYD,SYD-SGN,SGN-MEL,MEL-SGN,SGN-BNE,BNE-SGN,SGN-NRT,NRT-SGN,SGN-HAN,HAN-SGN"
+    crawl_interval_minutes: int = 5
+    crawl_stay_duration_days: int = 4  # nights per trip when building booking URLs
+
+    @property
+    def crawl_route_list(self) -> list[str]:
+        """Parse crawl_routes string into a list."""
+        return [r.strip() for r in self.crawl_routes.split(",") if r.strip()]
+
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "extra": "ignore",
+    }
 
 
 settings = Settings()

@@ -30,6 +30,9 @@ dist/
 chat_log/
 .benchmarks/
 
+# Crawler data (SQLite DB)
+data/
+
 # OS/editor noise
 .DS_Store
 Thumbs.db
