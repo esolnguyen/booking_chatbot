@@ -106,16 +106,17 @@ DESTINATION_GUIDES = [
     },
     {
         "id": "DEST-004",
-        "city": "New York",
-        "country": "USA",
+        "city": "Sydney",
+        "country": "Australia",
         "content": (
-            "New York City is a major domestic business destination. "
-            "Midtown Manhattan is the primary business district. Hotels near "
-            "Penn Station or Grand Central are convenient. Subway is the "
-            "fastest transit option. High hotel prices year-round."
+            "Sydney is Australia's largest city and a key business hub in the Asia-Pacific region. "
+            "The CBD and North Sydney are the primary business districts. Hotels near Circular Quay "
+            "or Darling Harbour are convenient for business travelers. Sydney hosts major finance, "
+            "tech, and mining industry headquarters. Weather is mild year-round. "
+            "Opal card recommended for public transit."
         ),
         "risk_level": 1,
-        "year": 2023,
+        "year": 2025,
     },
     {
         "id": "DEST-005",
@@ -176,16 +177,16 @@ EVENT_DATA = [
     },
     {
         "id": "EVT-004",
-        "city": "New York",
-        "event": "UN General Assembly",
-        "dates": "2026-09-15 to 2026-09-30",
+        "city": "Sydney",
+        "event": "Vivid Sydney Festival",
+        "dates": "2026-05-22 to 2026-06-13",
         "content": (
-            "The UN General Assembly causes significant security restrictions "
-            "and traffic disruptions in Midtown Manhattan. Hotels near the UN "
-            "headquarters see 50-100% price increases. Consider hotels in "
-            "other boroughs or New Jersey during this period."
+            "Vivid Sydney is one of the world's largest festivals of light, music, and ideas, "
+            "attracting over 3 million visitors. Hotels in Circular Quay and the CBD see "
+            "30-60% price increases. Book at least 4 weeks in advance. "
+            "The central business district remains fully operational during the festival."
         ),
-        "impact": "high_demand",
+        "impact": "moderate_demand",
         "year": 2026,
     },
 ]
@@ -236,22 +237,21 @@ MOCK_FLIGHTS = [
     },
     {
         "id": "FL-008", "airline": "Delta", "origin": "SFO",
-        "destination": "JFK", "departure_time": "2026-04-01T06:00",
-        "arrival_time": "2026-04-01T14:30", "price": 450.0,
-        "stops": 0, "available_seats": 55, "cabin_class": "economy",
+        "destination": "SYD", "departure_time": "2026-04-01T22:00",
+        "arrival_time": "2026-04-03T07:30", "price": 1500.0,
+        "stops": 0, "available_seats": 30, "cabin_class": "economy",
     },
     {
         "id": "FL-009", "airline": "United", "origin": "SFO",
-        "destination": "JFK", "departure_time": "2026-04-01T09:00",
-        "arrival_time": "2026-04-01T17:45", "price": 420.0,
-        "stops": 0, "available_seats": 40, "cabin_class": "economy",
+        "destination": "SYD", "departure_time": "2026-04-01T18:00",
+        "arrival_time": "2026-04-03T05:45", "price": 1350.0,
+        "stops": 1, "available_seats": 25, "cabin_class": "economy",
     },
-
     {
         "id": "FL-010", "airline": "BudgetAir", "origin": "SFO",
-        "destination": "JFK", "departure_time": "2026-04-01T12:00",
-        "arrival_time": "2026-04-01T22:00", "price": 280.0,
-        "stops": 2, "available_seats": 3, "cabin_class": "economy",
+        "destination": "SYD", "departure_time": "2026-04-01T10:00",
+        "arrival_time": "2026-04-03T02:00", "price": 750.0,
+        "stops": 2, "available_seats": 5, "cabin_class": "economy",
     },
     {
         "id": "FL-011", "airline": "Delta", "origin": "SFO",
@@ -305,19 +305,19 @@ MOCK_HOTELS = [
         "available_rooms": 10, "amenities": ["wifi", "gym", "restaurant"],
     },
     {
-        "id": "HT-008", "name": "Marriott Midtown NYC", "city": "New York",
-        "price_per_night": 480.0, "rating": 4.4,
-        "available_rooms": 6, "amenities": ["wifi", "gym", "restaurant"],
+        "id": "HT-008", "name": "Marriott Sydney CBD", "city": "Sydney",
+        "price_per_night": 420.0, "rating": 4.4,
+        "available_rooms": 8, "amenities": ["wifi", "gym", "restaurant"],
     },
     {
-        "id": "HT-009", "name": "Hilton Times Square", "city": "New York",
-        "price_per_night": 520.0, "rating": 4.2,
-        "available_rooms": 4, "amenities": ["wifi", "gym"],
+        "id": "HT-009", "name": "Hilton Sydney", "city": "Sydney",
+        "price_per_night": 480.0, "rating": 4.5,
+        "available_rooms": 5, "amenities": ["wifi", "gym", "pool"],
     },
     {
-        "id": "HT-010", "name": "Budget Stay NYC", "city": "New York",
-        "price_per_night": 180.0, "rating": 3.0,
-        "available_rooms": 20, "amenities": ["wifi"],
+        "id": "HT-010", "name": "Budget Inn Sydney", "city": "Sydney",
+        "price_per_night": 160.0, "rating": 3.1,
+        "available_rooms": 18, "amenities": ["wifi"],
     },
     {
         "id": "HT-011", "name": "Marriott Sukhumvit Bangkok", "city": "Bangkok",
@@ -336,7 +336,7 @@ AIRPORT_TO_CITY = {
     "NRT": "Tokyo", "HND": "Tokyo",
     "LHR": "London", "LGW": "London",
     "SIN": "Singapore",
-    "JFK": "New York", "LGA": "New York", "EWR": "New York",
+    "SYD": "Sydney", "MEL": "Melbourne",
     "BKK": "Bangkok",
     "SFO": "San Francisco", "OAK": "San Francisco",
 }

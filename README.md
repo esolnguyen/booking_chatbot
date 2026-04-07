@@ -28,17 +28,17 @@ A FastAPI + Streamlit project that recommends flight and hotel combinations for 
 
 ```text
 app/
-	agents/         # Recommendation + verification agents
-	mock/           # Mock inventory + knowledge base seed data
-	models/         # Request/response domain models
-	orchestrator/   # Retrieval, reranking, routing, full pipeline
-	validation/     # Policy/fact/response verification logic
+	agents/ # Recommendation + verification agents
+	mock/ # Mock inventory + knowledge base seed data
+	models/ # Request/response domain models
+	orchestrator/ # Retrieval, reranking, routing, full pipeline
+	validation/ # Policy/fact/response verification logic
 	approval_store.py
 	config.py
 	main.py
-chatbot.py        # Streamlit chat assistant UI
-test_request.py   # Quick API smoke test
-test/             # Scenario docs and test cases
+chatbot.py # Streamlit chat assistant UI
+test_request.py # Quick API smoke test
+test/ # Scenario docs and test cases
 ```
 
 ## Prerequisites

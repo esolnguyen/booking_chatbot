@@ -4,7 +4,7 @@
 
 ```
 confidence = 0.35 × policy_compliant + 0.25 × inventory_available
-           + 0.20 × evidence_grounded + 0.10 × freshness + 0.10 × margin
+ + 0.20 × evidence_grounded + 0.10 × freshness + 0.10 × margin
 ```
 
 - `margin = max(0.0, 1.0 - num_risk_flags × 0.15)`
@@ -15,13 +15,13 @@ confidence = 0.35 × policy_compliant + 0.25 × inventory_available
 
 | Confidence | Route | UI Display |
 |---|---|---|
-| ≥ 0.85 | `auto_suggest` | ✅ Green banner |
-| 0.60 – 0.84 | `suggest_with_caution` | ⚠️ Orange banner |
-| < 0.60 | `human_review` | 🚨 Red banner |
+| ≥ 0.85 | `auto_suggest` | Green banner |
+| 0.60 – 0.84 | `suggest_with_caution` | Orange banner |
+| < 0.60 | `human_review` | Red banner |
 
 ---
 
-## Test Case 1: ✅ High Confidence — New York Standard Trip
+## Test Case 1: High Confidence — New York Standard Trip
 
 **Expected route:** `auto_suggest` (~85-100%)
 
@@ -44,7 +44,7 @@ confidence = 0.35 × policy_compliant + 0.25 × inventory_available
 
 ---
 
-## Test Case 2: ⚠️ Medium Confidence — Tokyo Cherry Blossom Season
+## Test Case 2: Medium Confidence — Tokyo Cherry Blossom Season
 
 **Expected route:** `suggest_with_caution` (~60-84%)
 
@@ -67,7 +67,7 @@ confidence = 0.35 × policy_compliant + 0.25 × inventory_available
 
 ---
 
-## Test Case 3: 🚨 Low Confidence — Bangkok During Songkran
+## Test Case 3: Low Confidence — Bangkok During Songkran
 
 **Expected route:** `human_review` (< 60%, likely capped at ~40%)
 
@@ -92,7 +92,7 @@ confidence = 0.35 × policy_compliant + 0.25 × inventory_available
 
 ---
 
-## Test Case 4: 🚨 Low Confidence — Singapore with Policy Violation
+## Test Case 4: Low Confidence — Singapore with Policy Violation
 
 **Expected route:** `human_review` or `suggest_with_caution` (capped at ~50%)
 
@@ -115,7 +115,7 @@ confidence = 0.35 × policy_compliant + 0.25 × inventory_available
 
 ---
 
-## Test Case 5: ✅ High Confidence — Executive Tier London
+## Test Case 5: High Confidence — Executive Tier London
 
 **Expected route:** `auto_suggest` (~85-100%)
 
@@ -138,7 +138,7 @@ confidence = 0.35 × policy_compliant + 0.25 × inventory_available
 
 ---
 
-## Test Case 6: 🚨 Zero Confidence — Unknown Destination
+## Test Case 6: Zero Confidence — Unknown Destination
 
 **Expected route:** `human_review` (0%)
 
@@ -158,7 +158,7 @@ confidence = 0.35 × policy_compliant + 0.25 × inventory_available
 
 ---
 
-## Test Case 7: ⚠️ Non-Preferred Vendor Pressure — New York Budget
+## Test Case 7: Non-Preferred Vendor Pressure — New York Budget
 
 **Expected route:** `suggest_with_caution` (~60-75%)
 
@@ -187,35 +187,35 @@ confidence = 0.35 × policy_compliant + 0.25 × inventory_available
 
 | ID | Airline | Dest | Price | Class | Seats | Preferred? |
 |---|---|---|---|---|---|---|
-| FL-001 | Delta | NRT (Tokyo) | $1,800 | economy | 45 | ✅ |
-| FL-002 | United | NRT (Tokyo) | $1,650 | economy | 12 | ✅ |
-| FL-003 | Singapore Air | NRT (Tokyo) | $3,200 | business | 8 | ✅ |
-| FL-004 | Delta | LHR (London) | $2,100 | economy | 30 | ✅ |
-| FL-005 | United | LHR (London) | $1,950 | economy | 22 | ✅ |
-| FL-006 | Delta | SIN (Singapore) | $2,400 | economy | 18 | ✅ |
-| FL-007 | Singapore Air | SIN (Singapore) | $4,500 | business | 6 | ✅ |
-| FL-008 | Delta | JFK (New York) | $450 | economy | 55 | ✅ |
-| FL-009 | United | JFK (New York) | $420 | economy | 40 | ✅ |
-| FL-010 | BudgetAir | JFK (New York) | $280 | economy | 3 | ❌ |
-| FL-011 | Delta | BKK (Bangkok) | $2,200 | economy | **0** | ✅ |
-| FL-012 | United | BKK (Bangkok) | $2,050 | economy | 5 | ✅ |
+| FL-001 | Delta | NRT (Tokyo) | $1,800 | economy | 45 | |
+| FL-002 | United | NRT (Tokyo) | $1,650 | economy | 12 | |
+| FL-003 | Singapore Air | NRT (Tokyo) | $3,200 | business | 8 | |
+| FL-004 | Delta | LHR (London) | $2,100 | economy | 30 | |
+| FL-005 | United | LHR (London) | $1,950 | economy | 22 | |
+| FL-006 | Delta | SIN (Singapore) | $2,400 | economy | 18 | |
+| FL-007 | Singapore Air | SIN (Singapore) | $4,500 | business | 6 | |
+| FL-008 | Delta | JFK (New York) | $450 | economy | 55 | |
+| FL-009 | United | JFK (New York) | $420 | economy | 40 | |
+| FL-010 | BudgetAir | JFK (New York) | $280 | economy | 3 | |
+| FL-011 | Delta | BKK (Bangkok) | $2,200 | economy | **0** | |
+| FL-012 | United | BKK (Bangkok) | $2,050 | economy | 5 | |
 
 ### Hotels
 
 | ID | Hotel | City | $/Night | Rooms | Preferred? |
 |---|---|---|---|---|---|
-| HT-001 | Marriott Shinjuku | Tokyo | $350 | 3 | ✅ |
-| HT-002 | Hilton Tokyo Bay | Tokyo | $420 | **0** | ✅ |
-| HT-003 | Budget Inn Tokyo | Tokyo | $120 | 15 | ❌ |
-| HT-004 | Hilton London City | London | $380 | 8 | ✅ |
-| HT-005 | Marriott Canary Wharf | London | $450 | 5 | ✅ |
-| HT-006 | Marina Bay Sands | Singapore | $550 | 2 | ❌ |
-| HT-007 | Hyatt Singapore | Singapore | $320 | 10 | ✅ |
-| HT-008 | Marriott Midtown NYC | New York | $480 | 6 | ✅ |
-| HT-009 | Hilton Times Square | New York | $520 | 4 | ✅ |
-| HT-010 | Budget Stay NYC | New York | $180 | 20 | ❌ |
-| HT-011 | Marriott Sukhumvit | Bangkok | $200 | **0** | ✅ |
-| HT-012 | Hyatt Regency Bangkok | Bangkok | $250 | 2 | ✅ |
+| HT-001 | Marriott Shinjuku | Tokyo | $350 | 3 | |
+| HT-002 | Hilton Tokyo Bay | Tokyo | $420 | **0** | |
+| HT-003 | Budget Inn Tokyo | Tokyo | $120 | 15 | |
+| HT-004 | Hilton London City | London | $380 | 8 | |
+| HT-005 | Marriott Canary Wharf | London | $450 | 5 | |
+| HT-006 | Marina Bay Sands | Singapore | $550 | 2 | |
+| HT-007 | Hyatt Singapore | Singapore | $320 | 10 | |
+| HT-008 | Marriott Midtown NYC | New York | $480 | 6 | |
+| HT-009 | Hilton Times Square | New York | $520 | 4 | |
+| HT-010 | Budget Stay NYC | New York | $180 | 20 | |
+| HT-011 | Marriott Sukhumvit | Bangkok | $200 | **0** | |
+| HT-012 | Hyatt Regency Bangkok | Bangkok | $250 | 2 | |
 
 ### Standard Tier Budget Limits
 

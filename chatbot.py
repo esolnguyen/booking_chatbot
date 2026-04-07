@@ -1,4 +1,5 @@
 import asyncio
+import re
 import streamlit as st
 from datetime import date, timedelta
 from dotenv import load_dotenv
@@ -21,6 +22,7 @@ from app.validation.policy_checker import (
 )
 from app.validation.response_verifier import verify_response
 from app.models.request import BookingRequest, TravelerProfile
+from app.booking_activity import log_booking
 
 import os
 from datetime import datetime
@@ -53,8 +55,28 @@ def _log_interaction(question: str, answer: str, verification: dict | None = Non
         f.write("\n".join(lines) + "\n")
 
 
-st.set_page_config(page_title="Travel Booking Assistant", page_icon="✈️", layout="wide")
-st.title("✈️ AI Travel Booking Assistant")
+def _maybe_log_booking(reply: str, traveler_name: str, traveler_id: str, dest: str) -> None:
+    """Extract recommended flight/hotel IDs from the reply and log booking activity."""
+    flight_ids = re.findall(r"\bFL-\d+\b", reply)
+    hotel_ids = re.findall(r"\bHT-\d+\b", reply)
+    if not flight_ids and not hotel_ids:
+        return
+    flight_id = flight_ids[0] if flight_ids else None
+    hotel_id = hotel_ids[0] if hotel_ids else None
+    try:
+        log_booking(
+            traveler_name=traveler_name,
+            traveler_id=traveler_id,
+            destination=dest,
+            flight_id=flight_id,
+            hotel_id=hotel_id,
+        )
+    except Exception:
+        pass
+
+
+st.set_page_config(page_title="Travel Booking Assistant", page_icon="plane", layout="wide")
+st.title("AI Travel Booking Assistant")
 
 # --- Sidebar ---
 with st.sidebar:
@@ -71,7 +93,7 @@ with st.sidebar:
     prefs = st.text_input("Preferences (comma-separated)", "non_stop, hotel_gym")
 
     st.divider()
-    verify_enabled = st.toggle("🛡️ Enable response verification", value=True)
+    verify_enabled = st.toggle("Enable response verification", value=True)
     hitl_threshold = st.slider(
         "Verification confidence threshold",
         min_value=0.0,
@@ -82,20 +104,20 @@ with st.sidebar:
     )
 
     st.divider()
-    st.subheader("🧪 Quick Test Scenarios")
-    if st.button("🌸 Tokyo (Cherry Blossom)"):
+    st.subheader("Quick Test Scenarios")
+    if st.button("Tokyo (Cherry Blossom)"):
         st.session_state.update(
             {"_dest": "Tokyo", "_dep": "2026-04-01", "_ret": "2026-04-05"}
         )
         st.rerun()
-    if st.button("🎉 Bangkok (Songkran)"):
+    if st.button("Bangkok (Songkran)"):
         st.session_state.update(
             {"_dest": "Bangkok", "_dep": "2026-04-13", "_ret": "2026-04-16"}
         )
         st.rerun()
-    if st.button("🏙️ New York (Standard)"):
+    if st.button("Sydney (Standard)"):
         st.session_state.update(
-            {"_dest": "New York", "_dep": "2026-04-01", "_ret": "2026-04-03"}
+            {"_dest": "Sydney", "_dep": "2026-04-01", "_ret": "2026-04-05"}
         )
         st.rerun()
 
@@ -141,8 +163,8 @@ def _build_system_context() -> str:
     inv_lines = ["=== AVAILABLE FLIGHTS ==="]
     for f in flights:
         f_ok, f_issues = check_flight_policy(f, tier)
-        inv_ok = "✅" if f.available_seats > 0 else "❌ SOLD OUT"
-        pol_ok = "✅" if f_ok else f"⚠️ {'; '.join(f_issues)}"
+        inv_ok = "OK" if f.available_seats > 0 else "SOLD OUT"
+        pol_ok = "OK" if f_ok else f"VIOLATION: {'; '.join(f_issues)}"
         inv_lines.append(
             f"[{f.id}] {f.airline} {f.origin}->{f.destination} "
             f"${f.price} {f.cabin_class} {f.stops} stops "
@@ -151,8 +173,8 @@ def _build_system_context() -> str:
     inv_lines.append("\n=== AVAILABLE HOTELS ===")
     for h in hotels:
         h_ok, h_issues = check_hotel_policy(h, tier)
-        inv_ok = "✅" if h.available_rooms > 0 else "❌ NO ROOMS"
-        pol_ok = "✅" if h_ok else f"⚠️ {'; '.join(h_issues)}"
+        inv_ok = "OK" if h.available_rooms > 0 else "NO ROOMS"
+        pol_ok = "OK" if h_ok else f"VIOLATION: {'; '.join(h_issues)}"
         inv_lines.append(
             f"[{h.id}] {h.name} ${h.price_per_night}/night "
             f"Rating:{h.rating} {h.available_rooms} rooms "
@@ -189,12 +211,12 @@ def _confidence_color(conf: float) -> str:
     return "red"
 
 
-def _route_emoji(route: str) -> str:
+def _route_badge(route: str) -> str:
     return {
-        "auto_suggest": "✅",
-        "suggest_with_caution": "⚠️",
-        "human_review": "🚨",
-    }.get(route, "❓")
+        "auto_suggest": "[AUTO]",
+        "suggest_with_caution": "[CAUTION]",
+        "human_review": "[REVIEW]",
+    }.get(route, "[UNKNOWN]")
 
 
 # --- Chat state ---
@@ -210,9 +232,9 @@ for msg in st.session_state.messages:
             conf = v.get("confidence", 0)
             route = v.get("route", "unknown")
             color = _confidence_color(conf)
-            emoji = _route_emoji(route)
+            badge = _route_badge(route)
             st.markdown(
-                f"---\n{emoji} **Route:** `{route}` &nbsp; | &nbsp; "
+                f"---\n{badge} **Route:** `{route}` &nbsp; | &nbsp; "
                 f"**Confidence:** :{color}[{conf:.0%}]"
             )
             if v.get("risk_flags"):
@@ -245,7 +267,6 @@ if prompt := st.chat_input("Ask about your trip..."):
             )
             reply = response.choices[0].message.content
 
-        # Verification step
         verification_info = {}
         if verify_enabled:
             with st.spinner("Verifying response..."):
@@ -254,7 +275,6 @@ if prompt := st.chat_input("Ask about your trip..."):
                 issues = vr.get("issues", [])
                 safe = vr.get("safe_to_show", True)
 
-                # Map to a route based on confidence
                 if conf >= settings.auto_suggest_threshold:
                     route = "auto_suggest"
                 elif conf >= hitl_threshold:
@@ -264,7 +284,6 @@ if prompt := st.chat_input("Ask about your trip..."):
 
                 needs_approval = route in ("human_review", "suggest_with_caution")
 
-                # Run the full pipeline for approval tracking
                 approval_id = None
                 if needs_approval:
                     try:
@@ -287,18 +306,15 @@ if prompt := st.chat_input("Ask about your trip..."):
                 }
 
             color = _confidence_color(conf)
-            emoji = _route_emoji(route)
+            badge = _route_badge(route)
 
             if not safe and conf < hitl_threshold:
                 st.error(
                     "This response may contain inaccurate information. Please verify before acting on it."
                 )
             st.markdown(reply)
-            route_text = f"---\n{emoji} **Route:** `{route}` | **Confidence:** :{color}[{conf:.0%}]"
-            st.markdown(route_text)
-            # Issues are logged to chat_log.txt but not shown to the user
+            st.markdown(f"---\n{badge} **Route:** `{route}` | **Confidence:** :{color}[{conf:.0%}]")
 
-            # Human-in-the-loop: flag for approval if needed
             if needs_approval:
                 aid = verification_info.get("approval_id", "N/A")
                 st.info(
@@ -314,26 +330,20 @@ if prompt := st.chat_input("Ask about your trip..."):
             msg_data["verification"] = verification_info
         st.session_state.messages.append(msg_data)
 
-        # Log interaction to file
-        _log_interaction(
-            prompt, reply, verification_info if verification_info else None
-        )
+        _maybe_log_booking(reply, emp_name, emp_id, destination)
+        _log_interaction(prompt, reply, verification_info if verification_info else None)
 
 # --- Handle regeneration if flagged ---
 if st.session_state.get("_regenerate_index") is not None:
     regen_idx = st.session_state.pop("_regenerate_index")
     if 0 <= regen_idx < len(st.session_state.messages):
-        old_msg = st.session_state.messages[regen_idx]
-        # Find the user question that preceded this assistant message
         user_prompt = None
         for j in range(regen_idx - 1, -1, -1):
             if st.session_state.messages[j]["role"] == "user":
                 user_prompt = st.session_state.messages[j]["content"]
                 break
         if user_prompt:
-            # Remove the rejected assistant message
             st.session_state.messages.pop(regen_idx)
-            # Re-ask with an extra instruction to be more careful
             st.session_state.messages.append(
                 {
                     "role": "user",
@@ -359,25 +369,19 @@ if st.session_state.escalation_queue:
                 st.json(item)
                 col1, col2, col3 = st.columns(3)
                 if col1.button("Approve", key=f"approve_{i}"):
-                    # Mark as approved in the chat message
                     for msg in st.session_state.messages:
                         v = msg.get("verification", {})
                         if v.get("approval_id") == item.get("approval_id"):
                             v["status"] = "approved"
                     st.session_state.escalation_queue.pop(i)
-                    _log_interaction(
-                        "[HUMAN REVIEW]",
-                        "APPROVED",
-                        {
-                            "confidence": item.get("confidence"),
-                            "route": item.get("route"),
-                            "risk_flags": item.get("risk_flags", []),
-                        },
-                    )
+                    _log_interaction("[HUMAN REVIEW]", "APPROVED", {
+                        "confidence": item.get("confidence"),
+                        "route": item.get("route"),
+                        "risk_flags": item.get("risk_flags", []),
+                    })
                     st.success("Approved")
                     st.rerun()
                 if col2.button("Reject", key=f"reject_{i}"):
-                    # Find and flag the rejected message, then trigger regeneration
                     for idx, msg in enumerate(st.session_state.messages):
                         v = msg.get("verification", {})
                         if v.get("approval_id") == item.get("approval_id"):
@@ -385,34 +389,23 @@ if st.session_state.escalation_queue:
                             st.session_state["_regenerate_index"] = idx
                             break
                     st.session_state.escalation_queue.pop(i)
-                    _log_interaction(
-                        "[HUMAN REVIEW]",
-                        "REJECTED — triggering regeneration",
-                        {
-                            "confidence": item.get("confidence"),
-                            "route": item.get("route"),
-                            "risk_flags": item.get("risk_flags", []),
-                        },
-                    )
+                    _log_interaction("[HUMAN REVIEW]", "REJECTED — triggering regeneration", {
+                        "confidence": item.get("confidence"),
+                        "route": item.get("route"),
+                        "risk_flags": item.get("risk_flags", []),
+                    })
                     st.rerun()
                 if col3.button("Reject & Stop", key=f"reject_stop_{i}"):
-                    # Reject without regeneration — just add a warning to chat
                     for msg in st.session_state.messages:
                         v = msg.get("verification", {})
                         if v.get("approval_id") == item.get("approval_id"):
                             v["status"] = "rejected"
-                            msg[
-                                "content"
-                            ] += "\n\n> **This response was rejected by a human reviewer and should not be acted upon.**"
+                            msg["content"] += "\n\n> **This response was rejected by a human reviewer and should not be acted upon.**"
                     st.session_state.escalation_queue.pop(i)
-                    _log_interaction(
-                        "[HUMAN REVIEW]",
-                        "REJECTED — no regeneration",
-                        {
-                            "confidence": item.get("confidence"),
-                            "route": item.get("route"),
-                            "risk_flags": item.get("risk_flags", []),
-                        },
-                    )
+                    _log_interaction("[HUMAN REVIEW]", "REJECTED — no regeneration", {
+                        "confidence": item.get("confidence"),
+                        "route": item.get("route"),
+                        "risk_flags": item.get("risk_flags", []),
+                    })
                     st.error("Rejected — response marked as unreliable")
                     st.rerun()

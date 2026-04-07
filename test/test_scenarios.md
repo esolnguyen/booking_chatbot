@@ -85,7 +85,7 @@
 1. Response shows in chat with route badge and confidence score
 2. Item appears in sidebar under "Pending Reviews"
 3. Reviewer can:
-   - **Approve** — marks as reviewed, logs to `chat_log/`
-   - **Reject** — removes response, auto-regenerates with stricter instructions
-   - **Reject & Stop** — stamps response with rejection warning, no retry
+ - **Approve** — marks as reviewed, logs to `chat_log/`
+ - **Reject** — removes response, auto-regenerates with stricter instructions
+ - **Reject & Stop** — stamps response with rejection warning, no retry
 4. All actions are logged to `chat_log/YYYY-MM-DD.txt`
